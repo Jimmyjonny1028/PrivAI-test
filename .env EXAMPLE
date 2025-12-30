@@ -1,0 +1,22 @@
+# --- PrivAI Configuration ---
+
+# 1. SERVER SETTINGS
+PORT=10000
+# Generate a secure string for this
+JWT_SECRET_KEY=change_this_to_a_secure_random_string
+#this encryppts the databse autogenerates on first launch for you to copy in or do it manually
+DATABASE_ENCRYPTION_KEY=
+
+# 2. WORKER
+# Must match in both app.py and worker.py
+WORKER_SECRET_KEY=my_secure_worker_secret
+# URL for the worker to connect to the backend
+RENDER_SERVER_URL=ws://localhost:10000/ws/worker
+
+# 3. EXTERNAL APIS
+# Get free key from https://serper.dev
+SERPER_API_KEY=
+
+# 4. FIREBASE (Optional)
+# Base64 encoded serviceAccountKey.json
+FIREBASE_SERVICE_ACCOUNT_BASE64=
