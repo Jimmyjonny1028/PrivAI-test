@@ -61,8 +61,8 @@ if not SERPER_API_KEY:
 client = AsyncOpenAI(base_url='http://localhost:11434/v1', api_key='ollama', timeout=300.0)
 embedding_model_name = 'nomic-embed-text'
 
-DEFAULT_LLM_BASIC_MODEL = 'qwen2.5:14b'
-DEFAULT_LLM_ADVANCED_MODEL = 'qwen2.5:32b'
+DEFAULT_LLM_BASIC_MODEL = 'qwen3:14b'
+DEFAULT_LLM_ADVANCED_MODEL = 'qwen3:32b'
 LLM_US_LITE_MODEL = 'llama3.2:1b'
 
 heavy_model_lock = asyncio.Lock()
