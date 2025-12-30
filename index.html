@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="PrivAI - Secure Personal Intelligence Endpoint">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>PrivAI</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark-reasonable.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #020617; 
+            --bg-panel: #0f172a; 
+            --bg-surface: #1e293b;
+            --bg-hover: #334155; 
+            --bg-input: #0f172a; 
+            --border-dim: #1e293b;
+            --border-mid: #334155; 
+            --border-bright: #475569;
+            --primary: #3b82f6; 
+            --primary-hover: #2563eb;
+            --primary-dim: rgba(59, 130, 246, 0.15);
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --text-dim: #64748b;
+            --status-online: #10b981; 
+            --status-busy: #f59e0b; 
+            --status-error: #ef4444;
+            --sidebar-width: 280px; 
+            --header-height: 64px;
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        html, body { 
+            height: 100%; 
+            width: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+        }
+        
+        body { 
+            background-color: var(--bg-deep); 
+            color: var(--text-main); 
+            font-family: 'Inter', system-ui, sans-serif; 
+            text-rendering: optimizeLegibility; 
+            -webkit-font-smoothing: antialiased; 
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(8px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        @keyframes slideInRight { 
+            from { opacity: 0; transform: translateX(20px); } 
+            to { opacity: 1; transform: translateX(0); } 
+        }
+        
+        @keyframes pulse-ring { 
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } 
+        }
+        
+        @keyframes spin { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
+        }
+        
+        @keyframes dot-pulse { 
+            0% { opacity: 0.3; transform: scale(0.8); } 
+            50% { opacity: 1; transform: scale(1); } 
+            100% { opacity: 0.3; transform: scale(0.8); } 
+        }
+
+        .chat-container { 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            padding-bottom: 2rem; 
+            min-height: 0; 
+            flex: 1; 
+            overflow-y: auto; 
+        }
+        
+        .chat-bubble { 
+            max-width: 85%; 
+            width: fit-content; 
+            padding: 1rem 1.25rem; 
+            margin-bottom: 1.5rem; 
+            font-size: 0.95rem; 
+            line-height: 1.6; 
+            position: relative; 
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+            word-wrap: break-word; 
+        }
+        
+        .user-bubble { 
+            background-image: linear-gradient(160deg, #2563eb 0%, #1d4ed8 100%); 
+            color: white; 
+            border-radius: 1.25rem 1.25rem 0.25rem 1.25rem; 
+            margin-left: auto; 
+            border: 1px solid #1e40af; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); 
+        }
+        
+        .ai-bubble { 
+            background-color: var(--bg-surface); 
+            color: #e5e5e5; 
+            border-radius: 1.25rem 1.25rem 1.25rem 0.25rem; 
+            margin-right: auto; 
+            border: 1px solid var(--border-mid); 
+        }
+        
+        .system-bubble { 
+            font-size: 0.75rem; 
+            text-align: center; 
+            color: var(--text-dim); 
+            margin: 1.5rem 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 0.75rem; 
+            font-family: var(--font-mono); 
+            opacity: 0.8; 
+        }
+        
+        .system-bubble::before, .system-bubble::after { 
+            content: ''; 
+            height: 1px; 
+            width: 40px; 
+            background-color: var(--border-mid); 
+        }
+
+        .reasoning-block {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 2px solid #3b82f6;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .ai-bubble p { margin-bottom: 0.75em; } 
+        .ai-bubble p:last-child { margin-bottom: 0; }
+        .ai-bubble strong { color: #fff; font-weight: 600; } 
+        .ai-bubble em { color: #d4d4d4; font-style: italic; }
+        .ai-bubble ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75em; }
+        .ai-bubble ol { list-style-type: decimal; padding-left: 1.5rem; margin-bottom: 0.75em; }
+        .ai-bubble li { margin-bottom: 0.25em; }
+        .ai-bubble h1, .ai-bubble h2, .ai-bubble h3 { color: white; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; }
+        .ai-bubble h1 { font-size: 1.4em; border-bottom: 1px solid var(--border-mid); padding-bottom: 0.3em; }
+        .ai-bubble a { color: var(--primary); text-decoration: none; border-bottom: 1px dotted var(--primary); }
+        .ai-bubble blockquote { border-left: 4px solid var(--border-mid); padding-left: 1rem; margin: 1rem 0; color: var(--text-muted); font-style: italic; background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 0 4px 4px 0; }
+        .ai-bubble table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-mid); }
+        .ai-bubble th { background-color: #1a1a1a; color: white; padding: 0.75rem; border-bottom: 1px solid var(--border-mid); text-align: left; }
+        .ai-bubble td { padding: 0.75rem; border-bottom: 1px solid var(--border-dim); color: #d4d4d4; }
+        
+        .code-wrapper { 
+            margin: 1rem 0; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-mid); 
+            background-color: #0d0d0d; 
+            overflow: hidden; 
+            font-family: var(--font-mono); 
+        }
+        
+        .code-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0.5rem 1rem; 
+            background-color: #171717; 
+            border-bottom: 1px solid var(--border-dim); 
+            font-size: 0.75rem; 
+            color: var(--text-muted); 
+            user-select: none; 
+        }
+        
+        .lang-tag { font-weight: 700; color: #e5e5e5; text-transform: uppercase; }
+        
+        .copy-btn { 
+            background: transparent; 
+            border: none; 
+            color: var(--text-muted); 
+            cursor: pointer; 
+            font-size: 0.75rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            transition: color 0.2s; 
+        }
+        
+        .copy-btn:hover { color: white; }
+        
+        .code-body { 
+            padding: 1rem; 
+            overflow-x: auto; 
+            color: #e5e5e5; 
+            font-size: 0.85rem; 
+            line-height: 1.5; 
+        }
+        
+        :not(pre) > code { 
+            background-color: rgba(255,255,255,0.1); 
+            color: #fca5a5; 
+            padding: 0.2em 0.4em; 
+            border-radius: 4px; 
+            font-size: 0.85em; 
+        }
+
+        .thinking-container { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 0.75rem 1.25rem; 
+            background-color: var(--bg-surface); 
+            border: 1px solid var(--border-mid); 
+            border-radius: 1.5rem; 
+            margin-bottom: 1rem; 
+            align-self: flex-start; 
+        }
+        
+        .pulse-dot { 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            background-color: var(--primary); 
+            box-shadow: 0 0 10px var(--primary); 
+            animation: dot-pulse 1.5s infinite ease-in-out; 
+        }
+        
+        .modal-backdrop { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.8); 
+            backdrop-filter: blur(4px); 
+            z-index: 100; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.3s ease; 
+        }
+        
+        .modal-backdrop.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-window { 
+            background-color: var(--bg-panel); 
+            border: 1px solid var(--border-mid); 
+            border-radius: 16px; 
+            width: 90%; 
+            max-width: 480px; 
+            padding: 2rem; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+            transform: scale(0.95) translateY(10px); 
+            transition: transform 0.3s var(--ease-out-expo); 
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh; 
+        }
+        
+        .modal-backdrop.active .modal-window { transform: scale(1) translateY(0); }
+
+        #sidebar { 
+            width: var(--sidebar-width); 
+            background-color: var(--bg-panel); 
+            border-right: 1px solid var(--border-dim); 
+            display: flex; 
+            flex-direction: column; 
+            transition: margin-left 0.3s var(--ease-smooth), transform 0.3s var(--ease-smooth); 
+            z-index: 50; 
+        }
+        
+        @media (max-width: 768px) { 
+            #sidebar { 
+                position: absolute; 
+                height: 100%; 
+                transform: translateX(-100%); 
+                width: 85%; 
+                box-shadow: 20px 0 50px rgba(0,0,0,0.5); 
+            } 
+            #sidebar.open { transform: translateX(0); } 
+        }
+        
+        @media (min-width: 769px) { 
+            #sidebar.closed { margin-left: calc(var(--sidebar-width) * -1); } 
+        }
+        
+        .input-wrapper { 
+            background-color: var(--bg-input); 
+            border: 1px solid var(--border-mid); 
+            border-radius: 16px; 
+            padding: 0.5rem; 
+            display: flex; 
+            align-items: flex-end; 
+            gap: 0.5rem; 
+            transition: border-color 0.2s; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+        }
+        
+        .input-wrapper:focus-within { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); 
+        }
+        
+        textarea { 
+            background: transparent; 
+            border: none; 
+            color: var(--text-main); 
+            width: 100%; 
+            resize: none; 
+            padding: 0.75rem; 
+            font-size: 0.95rem; 
+            line-height: 1.5; 
+            max-height: 150px; 
+            outline: none; 
+        }
+        
+        #toast-container { 
+            position: fixed; 
+            bottom: 24px; 
+            right: 24px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            z-index: 2000; 
+        }
+        
+        .toast { 
+            background-color: var(--bg-surface); 
+            border: 1px solid var(--border-mid); 
+            color: var(--text-main); 
+            padding: 0.75rem 1rem; 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            min-width: 280px; 
+            animation: slideInRight 0.3s ease-out; 
+        }
+        
+        .toast.success { border-left: 3px solid var(--status-online); } 
+        .toast.error { border-left: 3px solid var(--status-error); }
+        
+        .btn { 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 0.6rem 1.2rem; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            transition: all 0.2s; 
+            cursor: pointer; 
+            border: none; 
+            gap: 8px; 
+        }
+        
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-1px); }
+        
+        .btn-icon { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: var(--text-muted); 
+            transition: all 0.2s; 
+            cursor: pointer; 
+        }
+        
+        .btn-icon:hover { background-color: var(--bg-hover); color: white; }
+        
+        .btn-icon.mic-active { 
+            color: var(--status-error); 
+            background-color: rgba(239, 68, 68, 0.1); 
+            animation: pulse-ring 1.5s infinite; 
+            border: 1px solid rgba(239, 68, 68, 0.3); 
+        }
+        
+        .tab-btn { 
+            padding: 0.4rem 1.2rem; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            color: var(--text-muted); 
+            border-radius: 6px; 
+            transition: all 0.2s; 
+        }
+        
+        .tab-btn:hover { color: white; }
+        
+        .tab-btn.active { 
+            background-color: var(--bg-hover); 
+            color: white; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2); 
+            border: 1px solid var(--border-mid); 
+        }
+        
+        .spinner { 
+            width: 20px; 
+            height: 20px; 
+            border: 2px solid rgba(255,255,255,0.1); 
+            border-left-color: white; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            display: inline-block; 
+        }
+
+        .model-info-card {
+            position: absolute;
+            bottom: 120%; 
+            left: 0;
+            width: 280px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-mid);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            transform: translateY(10px);
+        }
+
+        .model-trigger:hover .model-info-card {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .model-spec-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            transition: opacity 0.2s;
+        }
+
+        .model-spec-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .model-name-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .model-desc-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .model-tag {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-200">
+
+    <div id="toast-container"></div>
+
+    <div id="auth-modal" class="modal-backdrop">
+        <div class="modal-window">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-500/10 text-blue-500 mb-4 border border-blue-500/20">
+                    <i class="fas fa-fingerprint text-2xl"></i>
+                </div>
+                <h2 id="auth-title" class="text-2xl font-bold text-white tracking-tight">Sign In</h2>
+                <p class="text-sm text-gray-500 mt-2">Unlock advanced models & history.</p>
+            </div>
+            
+            <div id="auth-error" class="hidden bg-red-900/20 border border-red-900/50 text-red-200 p-3 rounded-lg mb-6 text-xs flex items-center gap-3">
+                <i class="fas fa-triangle-exclamation"></i>
+                <span id="auth-error-msg">Error message here</span>
+            </div>
+
+            <form id="auth-form" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Username</label>
+                    <input type="text" id="username" class="w-full bg-black border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:border-blue-600 focus:outline-none transition" placeholder="Enter username" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Password</label>
+                    <input type="password" id="password" class="w-full bg-black border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:border-blue-600 focus:outline-none transition" placeholder="Enter password" required>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="btn btn-primary w-full py-3 mt-2 shadow-lg shadow-blue-900/20">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-gray-800 flex justify-between items-center text-xs">
+                <button id="toggle-auth-mode" class="text-blue-400 hover:text-blue-300 transition">Create Account</button>
+                <button id="guest-login" class="text-gray-500 hover:text-white transition">Guest Access</button>
+            </div>
+
+            <div class="mt-4 flex justify-center">
+                <a href="/privacy" target="_blank" class="text-[10px] text-gray-600 hover:text-gray-400 transition hover:underline">
+                    Privacy Policy
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="api-modal" class="modal-backdrop">
+        <div class="modal-window">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                    <i class="fas fa-code text-yellow-500"></i> Developer API
+                </h3>
+                <button class="close-modal text-gray-500 hover:text-white transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+
+            <div class="bg-blue-900/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="text-sm font-bold text-blue-400">Developer Access</div>
+                        <div class="text-xs text-gray-400 mt-1">Free Tier includes <strong class="text-white">1 API Key</strong>.</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Rate Limit</div>
+                        <div class="text-xs text-gray-300 font-mono">10/min | 100/day</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-2 flex justify-between items-end">
+                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Keys</label>
+                <span id="key-count" class="text-[10px] text-gray-600 font-mono">0/1</span>
+            </div>
+
+            <div id="api-key-list" class="bg-black border border-gray-800 rounded-lg overflow-hidden min-h-[60px] mb-4">
+                <div class="p-4 text-center text-xs text-gray-600 italic">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Loading keys...
+                </div>
+            </div>
+
+            <button id="create-key-btn" class="btn btn-primary w-full disabled:opacity-50 disabled:grayscale mb-6">
+                <i class="fas fa-plus"></i> Generate Key
+            </button>
+
+            <div class="border-t border-gray-800 pt-4">
+                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 block text-center">Quick Start (Curl)</label>
+                <div class="bg-[#050505] border border-gray-800 rounded-lg p-3 font-mono text-[10px] text-blue-300 overflow-x-auto relative group">
+                    <pre><code>curl -X POST http://localhost:10000/api/v1/chat \
+  -H "x-api-key: YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello PrivAI"}'</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="modal-backdrop">
+        <div class="modal-window !max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                    <i class="fas fa-shield-halved text-red-500"></i> Admin Console
+                </h3>
+                <button class="close-modal text-gray-500 hover:text-white transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800 mb-6">
+                <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3">Live Announcement Control</h4>
+                <div class="flex gap-3">
+                    <input type="text" id="admin-banner-text" class="flex-1 bg-black border border-gray-700 rounded-lg px-4 py-2 text-sm text-white outline-none focus:border-blue-500" placeholder="Banner Text...">
+                    <input type="text" id="admin-banner-id" class="w-20 bg-black border border-gray-700 rounded-lg px-4 py-2 text-sm text-white text-center" placeholder="ID (v1)">
+                    <button id="save-banner-btn" class="bg-green-600 text-white px-6 rounded-lg text-xs font-bold hover:bg-green-500 transition">Update</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800 text-center">
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Total Users</div>
+                    <div class="text-3xl font-bold text-white" id="stat-users">-</div>
+                </div>
+                <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800 text-center">
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Total Calls</div>
+                    <div class="text-3xl font-bold text-green-400" id="stat-calls">-</div>
+                </div>
+                <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800 text-center">
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Active Keys</div>
+                    <div class="text-3xl font-bold text-yellow-400" id="stat-keys">-</div>
+                </div>
+            </div>
+
+            <div class="bg-black border border-gray-800 rounded-xl overflow-hidden flex flex-col">
+                <div class="overflow-y-auto max-h-[50vh] custom-scrollbar">
+                    <table class="w-full text-left text-sm text-gray-400 relative">
+                        <thead class="bg-gray-900 text-gray-300 text-[10px] uppercase font-bold tracking-wider sticky top-0 z-10">
+                            <tr>
+                                <th class="p-4 border-b border-gray-800 bg-gray-900">Identity</th>
+                                <th class="p-4 border-b border-gray-800 text-center bg-gray-900">Total</th>
+                                <th class="p-4 border-b border-gray-800 text-center text-blue-400 bg-gray-900">API</th>
+                                <th class="p-4 border-b border-gray-800 text-center bg-gray-900">Keys</th>
+                                <th class="p-4 border-b border-gray-800 text-right bg-gray-900">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-gray-800 font-mono text-xs">
+                            <tr><td colspan="5" class="p-6 text-center italic text-gray-600">Fetching data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex justify-end">
+                <button id="refresh-admin" class="text-xs text-blue-400 hover:text-white flex items-center gap-1 transition">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-full w-full">
+        
+        <aside id="sidebar" class="shrink-0 z-50">
+            <div class="h-16 flex items-center justify-between px-4 border-b border-[#1f1f1f]">
+                <span class="font-mono text-xs font-bold text-gray-500 tracking-widest uppercase">History</span>
+                <button class="md:hidden text-gray-400 hover:text-white transition" id="mobile-close-sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <div class="p-4 border-b border-[#1f1f1f] bg-[#0c0c0c]">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-xs font-bold text-white border border-gray-600 shadow-sm">
+                        ID
+                    </div>
+                    <div class="overflow-hidden">
+                        <div id="user-display" class="text-sm font-bold text-white truncate">Guest</div>
+                        <div class="text-[10px] text-green-500 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Online
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="user-actions" class="hidden flex flex-col gap-1 mt-2">
+                    <button id="open-api-btn" class="text-xs text-left px-2 py-1.5 rounded hover:bg-[#1f1f1f] text-gray-400 hover:text-white transition flex gap-2 items-center">
+                        <i class="fas fa-key text-yellow-600"></i> API Keys
+                    </button>
+                    <button id="open-admin-btn" class="hidden text-xs text-left px-2 py-1.5 rounded hover:bg-[#1f1f1f] text-red-400 hover:text-red-300 transition flex gap-2 items-center">
+                        <i class="fas fa-shield-halved text-red-500"></i> Admin Panel
+                    </button>
+                    <button id="btn-logout" class="text-xs text-left px-2 py-1.5 rounded hover:bg-[#1f1f1f] text-gray-400 hover:text-white transition flex gap-2 items-center">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </button>
+                </div>
+            </div> 
+
+            <div class="p-3">
+                <button id="new-chat-btn" onclick="chat.newChat()" class="w-full bg-[#1a1a1a] hover:bg-[#252525] text-white py-2.5 rounded-lg border border-[#2a2a2a] transition text-sm flex items-center justify-center gap-2 font-medium shadow-sm hover:shadow-md">
+                    <i class="fas fa-plus text-blue-500"></i> New Chat
+                </button>
+            </div>
+
+            <div id="history-list" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar"></div>
+            
+            <div id="chat-limit-warning" class="hidden p-2 m-2 bg-red-900/10 border border-red-900/50 rounded text-center">
+                <p class="text-[10px] text-red-400 font-bold">Chat Limit Reached</p>
+                <p class="text-[9px] text-red-300/70">Delete old chats to continue</p>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full bg-[#050505] relative min-w-0">
+            
+            <header class="h-16 border-b border-[#1f1f1f] flex items-center justify-between px-4 lg:px-6 bg-[#0a0a0a]/90 backdrop-blur z-20 shrink-0">
+                <div class="flex items-center gap-3 w-1/3">
+                    <button id="toggle-sidebar" class="text-gray-400 hover:text-white transition"><i class="fas fa-bars text-lg"></i></button>
+                    <h1 class="font-bold text-lg tracking-tight text-white hidden md:block">PrivAI</h1>
+                </div>
+
+                <div class="flex justify-center w-1/3">
+                    <div class="flex bg-black rounded-lg p-1 border border-[#1f1f1f]">
+                        <button id="tab-pdf" class="tab-btn">
+                            <i class="fas fa-file-pdf mr-1"></i> PDF
+                        </button>
+                        <button id="tab-chat" class="tab-btn active">
+                            <i class="fas fa-comments mr-1"></i> Chat
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end w-1/3">
+                    <button id="header-login-btn" class="text-xs bg-white text-black px-3 py-1.5 rounded font-bold hover:bg-gray-200 transition">
+                        Sign In
+                    </button>
+                </div>
+            </header>
+
+            <div id="news-banner" class="hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-[11px] py-2 px-4 flex items-center justify-center relative z-10 transition-all duration-300 shadow-lg cursor-pointer" onclick="if(!store.token) ui.openModal('auth-modal')">
+                <div class="flex items-center gap-3">
+                    <span class="bg-white/20 px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter shadow-sm">New</span>
+                    <span id="banner-text" class="font-medium tracking-wide">
+                    </span>
+                </div>
+                <button onclick="event.stopPropagation(); ui.dismissBanner()" class="absolute right-4 text-white/50 hover:text-white transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="view-pdf" class="hidden flex-1 grid grid-cols-1 lg:grid-cols-2 overflow-hidden relative">
+                <div class="hidden lg:flex flex-col bg-[#0a0a0a] border-r border-[#1f1f1f] relative">
+                    <div id="pdf-empty" class="absolute inset-0 flex flex-col items-center justify-center text-gray-700 pointer-events-none select-none">
+                        <i class="fas fa-file-arrow-up text-5xl mb-4 opacity-20"></i>
+                        <p class="text-sm font-medium">Upload a Document</p>
+                    </div>
+                    <embed id="pdf-embed" class="w-full h-full hidden" type="application/pdf">
+                </div>
+                <div class="flex flex-col bg-[#050505] relative">
+                    <div id="pdf-chat-container" class="flex-1 overflow-y-auto p-4 lg:p-6 custom-scrollbar"></div>
+                    <div class="p-4 border-t border-[#1f1f1f] bg-[#0a0a0a]">
+                        <div class="input-wrapper">
+                            <label class="btn-icon cursor-pointer hover:text-white" title="Upload PDF">
+                                <i class="fas fa-paperclip"></i>
+                                <input type="file" id="pdf-upload" class="hidden" accept=".pdf">
+                            </label>
+                            <textarea id="pdf-input" rows="1" placeholder="Analyze document..." class="flex-1 bg-transparent border-none outline-none text-sm text-white resize-none py-2"></textarea>
+                            <button id="pdf-mic" class="btn-icon hover:text-white"><i class="fas fa-microphone"></i></button>
+                            <button id="pdf-send" class="btn-icon text-blue-500 hover:text-blue-400"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-chat" class="flex flex-1 flex-col overflow-hidden relative w-full">
+                
+                <div id="welcome-screen" class="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none select-none pb-20">
+                    <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight text-center px-4 mb-2">
+                        Priv AI.
+                    </h1>
+                    <p class="text-xl md:text-2xl text-gray-500 font-medium tracking-tight text-center">
+                       Private. No cloud. No tracking.
+                    </p>
+                </div>
+
+                <div id="ai-chat-container" class="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar w-full z-10 relative"></div>
+                
+                <div id="img-preview" class="hidden absolute bottom-24 left-4 lg:left-10 bg-[#1f1f1f] p-2 rounded-lg border border-[#333] z-10 shadow-xl">
+                    <img id="img-tag" class="h-20 w-20 object-cover rounded">
+                    <button id="remove-img-btn" class="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center hover:bg-red-600 transition">×</button>
+                </div>
+
+                <div class="p-4 border-t border-[#1f1f1f] bg-[#0a0a0a] w-full z-20">
+                    <div class="max-w-5xl mx-auto w-full">
+                        <div class="flex justify-between items-center mb-3 px-1">
+                            <div class="relative model-trigger">
+                                <div class="flex items-center gap-2">
+                                    <div class="relative">
+                                        <select id="model-selector" class="appearance-none bg-[#1a1a1a] text-white text-[11px] font-medium py-1.5 pl-3 pr-8 rounded border border-[#333] focus:border-blue-500 outline-none cursor-pointer hover:border-gray-600 transition">
+                                            <option value="basic">PrivAI Basic</option>
+                                            <option value="advanced">PrivAI Advanced</option>
+                                            <option value="deep">PrivAI Deep Think</option>
+                                            <option value="usa">US Lite (Meta)</option>
+                                        </select>
+                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 text-xs">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-circle-info text-gray-600 hover:text-blue-400 cursor-help transition text-xs"></i>
+                                </div>
+                                <div class="model-info-card shadow-2xl">
+                                    <div class="model-spec-item" style="opacity: 1;">
+                                        <span class="model-name-label text-blue-400">Basic <span class="model-tag bg-blue-500/10 border border-blue-500/20 text-blue-400">Fast</span></span>
+                                        <p class="model-desc-label">PrivAI Basic - 14B Model. Balanced speed and intelligence.</p>
+                                    </div>
+                                    <div class="model-spec-item" style="opacity: 0.5;">
+                                        <span class="model-name-label text-purple-400">Advanced <span class="model-tag bg-purple-500/10 border border-purple-500/20 text-purple-400">Smart</span></span>
+                                        <p class="model-desc-label">PrivAI Advanced - 32B Model. High intelligence with Web Search.</p>
+                                    </div>
+                                    <div class="model-spec-item" style="opacity: 0.5;">
+                                        <span class="model-name-label text-yellow-500">Deep Think <span class="model-tag bg-yellow-500/10 border border-yellow-500/20 text-yellow-500">Premium</span></span>
+                                        <p class="model-desc-label">Chain-of-Thought Reasoning. Registered users only. Limit: 3 per day.</p>
+                                    </div>
+                                    <div class="model-spec-item" style="opacity: 0.5;">
+                                        <span class="model-name-label text-red-400">US Lite <span class="model-tag bg-red-500/10 border border-red-500/20 text-red-400">Meta</span></span>
+                                        <p class="model-desc-label">Llama 3.2 (1B). Extremely fast, low resource usage.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 text-[11px] font-medium text-gray-500 uppercase tracking-wide">
+                                <label class="flex items-center gap-2 cursor-pointer hover:text-blue-400 transition" title="Enable Internet Access">
+                                    <input type="checkbox" id="tog-web" class="accent-blue-500"> Web Search
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer hover:text-green-400 transition" title="Text-to-Speech">
+                                    <input type="checkbox" id="tog-voice" class="accent-green-500"> Auto-Speak
+                                </label>
+                            </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <label class="btn-icon cursor-pointer hover:text-white" title="Upload Image">
+                        <i class="fas fa-image"></i>
+                        <input type="file" id="img-upload" class="hidden" accept="image/*">
+                    </label>
+                    
+                    <textarea id="ai-input" rows="1" placeholder="Type a message..." class="flex-1 bg-transparent border-none outline-none text-sm text-white resize-none py-2"></textarea>
+                    
+                    <button id="ai-mic" class="btn-icon hover:text-white"><i class="fas fa-microphone"></i></button>
+                    <button id="ai-send" class="btn-icon text-blue-500 hover:text-blue-400"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/+esm';
+
+        const API_URL = 'http://localhost:10000';
+        const RENDER_SPEED = 10;
+        const CHARS_PER_TICK = 3;
+
+        const store = {
+            token: localStorage.getItem('privai_token'),
+            guestId: localStorage.getItem('privai_gid') || `guest_${Math.random().toString(36).slice(2)}`,
+            activeTab: 'chat',
+            history: { pdf: [], chat: [] },
+            isGenerating: false,
+            currentDocId: null,
+            currentPdfName: null,
+            currentImage: null,
+            currentChatId: null, 
+            chatCount: 0,
+            socket: null,
+            bannerId: 'v1',
+            lastPayload: null,
+            pendingResponse: false
+        };
+        if(!localStorage.getItem('privai_gid')) localStorage.setItem('privai_gid', store.guestId);
+
+        const $ = (id) => document.getElementById(id);
+        
+        const notify = (msg, type='info') => {
+            const t = document.createElement('div');
+            t.className = `toast toast-${type}`;
+            let icon = type==='success'?'check-circle':type==='error'?'triangle-exclamation':'info-circle';
+            t.innerHTML = `<i class="fas fa-${icon}"></i> <span>${msg}</span>`;
+            $('toast-container').appendChild(t);
+            setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(), 300); }, 3000);
+        };
+
+        const ui = {
+            toggleSidebar: () => {
+                const s = $('sidebar');
+                if(window.innerWidth < 768) s.classList.toggle('open'); 
+                else s.classList.toggle('closed');
+            },
+            switchTab: (tab) => {
+                store.activeTab = tab;
+                ['pdf','chat'].forEach(t => {
+                    $(`tab-${t}`).className = t === tab ? 'tab-btn active' : 'tab-btn';
+                    $(`view-${t}`).classList.toggle('hidden', t !== tab);
+                    $(`view-${t}`).classList.toggle('flex', t === tab);
+                    if(t==='pdf' && tab==='pdf') $(`view-${t}`).classList.add('grid');
+                    else $(`view-${t}`).classList.remove('grid');
+                });
+                
+                if (tab === 'pdf') {
+                    const sel = $('model-selector');
+                    sel.value = 'basic';
+                    sel.dispatchEvent(new Event('change'));
+                }
+                
+                if(!store.currentChatId) chat.loadSavedList(); 
+            },
+            openModal: (id) => $(id).classList.add('active'),
+            closeModal: (id) => $(id).classList.remove('active'),
+            lockInputs: (locked) => {
+                $('pdf-input').disabled = locked; $('ai-input').disabled = locked;
+                $('pdf-send').disabled = locked; $('ai-send').disabled = locked;
+                const icon = locked ? '<div class="spinner"></div>' : '<i class="fas fa-paper-plane"></i>';
+                $('pdf-send').innerHTML = icon; $('ai-send').innerHTML = icon;
+                if(!locked) setTimeout(() => (store.activeTab==='pdf'?$('pdf-input'):$('ai-input')).focus(), 100);
+            },
+            dismissBanner: () => {
+                const banner = document.getElementById('news-banner');
+                if(banner) {
+                    banner.style.marginTop = '-40px'; banner.style.opacity = '0';
+                    setTimeout(() => banner.remove(), 300);
+                    localStorage.setItem('privai_banner_id', store.bannerId);
+                }
+            },
+            initBanner: async () => {
+                try {
+                    const res = await fetch(`${API_URL}/banner`);
+                    const data = await res.json();
+                    store.bannerId = data.id || 'v1';
+                    if(data.active && localStorage.getItem('privai_banner_id') !== data.id) {
+                        $('news-banner').classList.remove('hidden');
+                        $('banner-text').innerHTML = data.text || 'Welcome to PrivAI';
+                    }
+                } catch(e){}
+            }
+        };
+
+        function parseJwt(token) {
+            try { return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))); } 
+            catch (e) { return null; }
+        }
+
+        const auth = {
+            login: async (username, password, isSignup) => {
+                const ep = isSignup ? '/signup' : '/auth/login';
+                try {
+                    const res = await fetch(`${API_URL}${ep}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({username, password})
+                    });
+                    const d = await res.json();
+                    
+                    if(!res.ok) throw new Error(d.detail || 'Failed');
+                    
+                    if (isSignup) {
+                        notify('Account created! Please login.', 'success');
+                        $('toggle-auth-mode').click();
+                    } else {
+                        localStorage.setItem('privai_token', d.access_token);
+                        store.token = d.access_token; 
+                        ui.closeModal('auth-modal');
+                        updateAuthUI(); 
+                        chat.loadSavedList(); 
+                        notify('Session Authenticated', 'success');
+                        if(ws.conn) ws.conn.close();
+                    }
+                } catch(e) {
+                    $('auth-error').classList.remove('hidden');
+                    $('auth-error-msg').innerText = e.message;
+                }
+            },
+            logout: () => {
+                localStorage.removeItem('privai_token');
+                window.location.reload();
+            },
+            init: () => { updateAuthUI(); }
+        };
+
+        function updateAuthUI() {
+            const token = localStorage.getItem('privai_token');
+            if(token) {
+                const p = parseJwt(token);
+                if(p) {
+                    $('user-display').innerText = p.sub;
+                    $('user-actions').classList.remove('hidden');
+                    $('header-login-btn').style.display='none';
+                    if(p.is_admin) $('open-admin-btn').classList.remove('hidden');
+                } else { auth.logout(); }
+            } else {
+                $('user-display').innerText = 'Guest';
+                $('user-actions').classList.add('hidden');
+                $('header-login-btn').style.display='block';
+                $('header-login-btn').innerText = 'Sign In';
+            }
+        }
+
+        class VoiceEngine {
+            constructor() {
+                this.synth = window.speechSynthesis;
+                const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if(SR) {
+                    this.rec = new SR();
+                    this.rec.lang = 'en-US';
+                    this.rec.continuous = false;
+                    this.rec.onresult = (e) => {
+                        const txt = e.results[0][0].transcript;
+                        const input = store.activeTab==='pdf' ? $('pdf-input') : $('ai-input');
+                        input.value = txt; chat.send(store.activeTab);
+                    };
+                    this.rec.onstart = () => this.visuals(true);
+                    this.rec.onend = () => this.visuals(false);
+                }
+            }
+            toggle(tab) {
+                if(this.rec) this.rec.start(); else notify("Voice not supported", "error");
+            }
+            visuals(active) {
+                const btns = [$('pdf-mic'), $('ai-mic')];
+                btns.forEach(b => active ? b.classList.add('mic-active') : b.classList.remove('mic-active'));
+            }
+        }
+        const voice = new VoiceEngine();
+
+        let renderInterval = null;
+        let streamingState = {
+            pdfchat: { active: false, buffer: '', currentText: '', div: null, thinking: null, ended: false },
+            aichat: { active: false, buffer: '', currentText: '', div: null, thinking: null, ended: false }
+        };
+
+        const ws = {
+            conn: null,
+            init: () => {
+                const proto = API_URL.includes('https') ? 'wss' : 'ws';
+                const host = API_URL.replace(/^https?:\/\//, '');
+                const q = store.token ? `?token=${store.token}` : `?guest_id=${store.guestId}`;
+                
+                ws.conn = new WebSocket(`${proto}://${host}/ws${q}`);
+                
+                ws.conn.onopen = () => { 
+                    console.log('Connected'); 
+                    chat.loadSavedList(); 
+                    
+                    const btn = document.getElementById('btn-retry');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.className = "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/50 px-3 py-1 rounded text-xs transition cursor-pointer";
+                        btn.innerHTML = '<i class="fas fa-rotate-right"></i> Click to Retry';
+                        notify("Connection Restored", "success");
+                    }
+                };
+
+                ws.conn.onclose = () => { 
+                    if (store.pendingResponse) {
+                        chat.handleDisconnect();
+                    }
+                    setTimeout(ws.init, 3000); 
+                };
+                
+                ws.conn.onmessage = (e) => {
+                    const msg = JSON.parse(e.data);
+                    const target = msg.target || (store.activeTab === 'pdf' ? 'pdfchat' : 'aichat');
+                    
+                    if(msg.type === 'stream_start') {
+                        chat.ui.startStream(target);
+                        ui.lockInputs(true);
+                    } else if(msg.type === 'stream_chunk') {
+                        chat.ui.appendStream(msg.data);
+                    } else if(msg.type === 'stream_end') {
+                        chat.ui.endStream();
+                        ui.lockInputs(false);
+                        store.pendingResponse = false; 
+                        chat.save(); 
+                    }
+                    else if (msg.type === 'limit_reached') {
+                        chat.ui.removeThinking();
+                        ui.lockInputs(false);
+                        store.pendingResponse = false;
+                        notify("Trial Limit Reached. Sign in to continue.", "error");
+                        $('model-selector').value = 'advanced'; 
+                        const items = document.querySelectorAll('.model-spec-item');
+                        items.forEach(item => item.style.opacity = '0.5');
+                        items[1].style.opacity = '1'; 
+                        ui.openModal('auth-modal');
+                    }
+                    else if(msg.type === 'audio_playback') {
+                        if($('tog-voice').checked) {
+                            try {
+                                const audio = new Audio("data:audio/mp3;base64," + msg.data);
+                                audio.play();
+                            } catch(err) { console.error("Audio playback error", err); }
+                        }
+                    } else if(msg.type === 'error') {
+                        notify(msg.data, 'error');
+                        ui.lockInputs(false);
+                        store.pendingResponse = false;
+                        chat.ui.removeThinking();
+                    } else if(msg.type === 'upload_complete') {
+                        store.currentDocId = msg.doc_id;
+                        notify('Document Indexed', 'success');
+                        chat.ui.removeThinking();
+                        ui.lockInputs(false);
+                    } else if(msg.type === 'status') {
+                        chat.ui.updateThinking(msg.data);
+                    }
+                };
+            },
+            send: (payload) => {
+                if (ws.conn && ws.conn.readyState === WebSocket.OPEN) {
+                    ws.conn.send(JSON.stringify(payload));
+                } else {
+                    console.warn("WS not ready");
+                    notify("Connecting to server...", "error");
+                }
+            }
+        };
+
+        function startRenderLoop() {
+            if(renderInterval) return;
+            renderInterval = setInterval(() => {
+                let active = false;
+                const speed = CHARS_PER_TICK;
+                ['pdfchat', 'aichat'].forEach(t => {
+                    const st = streamingState[t];
+                    if(st.active && st.div) {
+                        active = true;
+                        if(st.buffer.length > 0) {
+                            const chunk = st.buffer.substring(0, speed);
+                            st.currentText += chunk;
+                            st.buffer = st.buffer.substring(chunk.length);
+                            
+                            let processedText = st.currentText.replace(
+                                /### INTERNAL REASONING:\n([\s\S]*?)\n\n/g, 
+                                '<div class="reasoning-block"><div class="text-[10px] font-bold uppercase mb-1 flex items-center gap-2"><i class="fas fa-brain text-blue-500"></i> Thought Process</div>$1</div>'
+                            );
+                            
+                            st.div.innerHTML = DOMPurify.sanitize(marked.parse(processedText));
+                            st.div.parentElement.scrollTop = st.div.parentElement.scrollHeight;
+                        }
+                        if(st.ended && st.buffer.length === 0) {
+                            st.active = false;
+                            const h = t==='pdfchat' ? store.history.pdf : store.history.chat;
+                            if(h.length === 0 || h[h.length-1].sender !== 'ai') {
+                                h.push({sender:'ai', text:st.currentText, imageB64:null});
+                            }
+                            ui.lockInputs(false);
+                        }
+                    }
+                });
+                if(!active) { clearInterval(renderInterval); renderInterval=null; }
+            }, 20);
+        }
+
+        function addCopyButton(pre) {
+            if(pre.parentNode.className === 'code-wrapper') return;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-wrapper';
+            
+            const header = document.createElement('div');
+            header.className = 'code-header';
+            
+            const code = pre.querySelector('code');
+            const langClass = Array.from(code.classList).find(c => c.startsWith('language-'));
+            const lang = langClass ? langClass.replace('language-', '') : 'TEXT';
+            
+            header.innerHTML = `<span class="lang-tag">${lang}</span> <button class="copy-btn" onclick="window.copyCode(this)"><i class="fas fa-copy"></i> Copy</button>`;
+            
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(header);
+            
+            const body = document.createElement('div');
+            body.className = 'code-body';
+            body.appendChild(pre);
+            wrapper.appendChild(body);
+        }
+
+        window.copyCode = (btn) => {
+            const code = btn.closest('.code-wrapper').querySelector('code').innerText;
+            navigator.clipboard.writeText(code);
+            btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Copy', 2000);
+        }
+
+        window.copyKey = (btn, key) => {
+            navigator.clipboard.writeText(key);
+            btn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
+            setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 2000);
+        };
+
+        const chat = {
+            ui: {
+                currentBubble: null, buffer: "",
+                add: (text, sender, target) => {
+                    if(target === 'chat') $('welcome-screen').classList.add('hidden');
+
+                    const container = target==='pdf' ? $('pdf-chat-container') : $('ai-chat-container');
+                    const div = document.createElement('div');
+                    div.className = `chat-bubble ${sender==='user'?'user-bubble':'ai-bubble'}`;
+                    
+                    if(sender==='user' && store.currentImage && target==='chat') {
+                        div.innerHTML = `<img src="data:image/jpeg;base64,${store.currentImage}" class="rounded-lg max-w-[200px] mb-2 block border border-white/20">`;
+                    }
+                    if(text) {
+                        if(sender === 'system') {
+                            div.className = 'system-bubble';
+                            div.innerText = text;
+                        } else {
+                             let processedText = text.replace(
+                                /### INTERNAL REASONING:\n([\s\S]*?)\n\n/g, 
+                                '<div class="reasoning-block"><div class="text-[10px] font-bold uppercase mb-1 flex items-center gap-2"><i class="fas fa-brain text-blue-500"></i> Thought Process</div>$1</div>'
+                            );
+                            div.innerHTML = DOMPurify.sanitize(marked.parse(processedText));
+                        }
+                    }
+                    if(sender==='ai') {
+                        div.querySelectorAll('pre code').forEach((el) => {
+                            hljs.highlightElement(el);
+                            addCopyButton(el.parentElement);
+                        });
+                    }
+                    container.appendChild(div);
+                    container.scrollTop = container.scrollHeight;
+                    
+                    const arr = target==='pdf' ? store.history.pdf : store.history.chat;
+                    arr.push({sender, text, image: (sender==='user' && target==='chat') ? store.currentImage : null});
+                    return div;
+                },
+                showThinking: (target) => {
+                    const container = target==='pdf' ? $('pdf-chat-container') : $('ai-chat-container');
+                    const div = document.createElement('div');
+                    div.id = 'thinking-indicator';
+                    div.className = 'thinking-container'; 
+                    div.innerHTML = `<div class="pulse-dot"></div><div class="thinking-text">Processing...</div>`;
+                    container.appendChild(div); container.scrollTop = container.scrollHeight;
+                },
+                updateThinking: (text) => {
+                    const el = $('thinking-indicator');
+                    if(el) el.querySelector('.thinking-text').innerText = text;
+                },
+                removeThinking: () => {
+                    const el = $('thinking-indicator');
+                    if(el) el.remove();
+                },
+                startStream: (target) => {
+                    chat.ui.removeThinking();
+                    chat.ui.buffer = "";
+                    const container = target==='pdfchat' ? $('pdf-chat-container') : $('ai-chat-container');
+                    const div = document.createElement('div');
+                    div.className = 'chat-bubble ai-bubble';
+                    container.appendChild(div);
+                    
+                    const st = streamingState[target];
+                    st.div = div; st.currentText = ""; st.buffer = ""; st.active = true; st.ended = false;
+                    startRenderLoop();
+                },
+                appendStream: (chunk) => {
+                    const t = store.activeTab === 'pdf' ? 'pdfchat' : 'aichat';
+                    if(streamingState[t].active) streamingState[t].buffer += chunk;
+                },
+                endStream: () => {
+                    const t = store.activeTab === 'pdf' ? 'pdfchat' : 'aichat';
+                    streamingState[t].ended = true;
+                }
+            },
+            
+            handleDisconnect: () => {
+                chat.ui.removeThinking();
+                ui.lockInputs(false);
+                
+                const container = store.activeTab === 'pdf' ? $('pdf-chat-container') : $('ai-chat-container');
+                const div = document.createElement('div');
+                div.id = 'retry-prompt';
+                div.className = 'system-bubble text-red-400 flex flex-col gap-2';
+                div.innerHTML = `
+                    <span><i class="fas fa-wifi"></i> Connection interrupted.</span>
+                    <button id="btn-retry" onclick="chat.retry()" disabled class="bg-gray-800 text-gray-500 border border-gray-700 px-3 py-1 rounded text-xs transition cursor-not-allowed">
+                        <i class="fas fa-spinner fa-spin"></i> Reconnecting...
+                    </button>
+                `;
+                container.appendChild(div);
+                container.scrollTop = container.scrollHeight;
+            },
+
+            retry: () => {
+                if (!store.lastPayload) return;
+                
+                const el = document.getElementById('retry-prompt');
+                if(el) el.remove();
+
+                ui.lockInputs(true);
+                chat.ui.showThinking(store.activeTab);
+                store.pendingResponse = true;
+                ws.send(store.lastPayload);
+            },
+
+            send: (target) => {
+                const input = target==='pdf' ? $('pdf-input') : $('ai-input');
+                const text = input.value.trim();
+                const img = target==='chat' ? store.currentImage : null;
+                
+                if(!text && !img) return;
+                
+                if(!store.currentChatId && store.chatCount >= 50) {
+                    notify("Chat limit (50) reached. Delete old chats.", "error");
+                    return;
+                }
+
+                const model = $('model-selector').value;
+                
+                if (model === 'deep' && !store.token) {
+                    notify("Please sign in to use Deep Think.", "error");
+                    ui.openModal('auth-modal');
+                    return;
+                }
+
+                if (model === 'deep') {
+                    if (!$('tog-web').checked) {
+                         $('tog-web').checked = true;
+                         notify("Deep Research Active", "success");
+                    }
+                }
+
+                chat.ui.add(text, 'user', target);
+                input.value = '';
+                if(target==='chat') app.clearImage();
+                
+                ui.lockInputs(true);
+                chat.ui.showThinking(target);
+                
+                const histArr = target==='pdf' ? store.history.pdf : store.history.chat;
+                const context = histArr.slice(0, -1).map(m=>({sender:m.sender, text:m.text}));
+                
+                const payload = {
+                    type: target==='pdf'?'ask':img?'general_chat_with_image':'general_chat',
+                    target: target==='pdf'?'pdfchat':'aichat',
+                    data: {
+                        question: text, image_b64: img, history: context,
+                        model: model, enable_web_search: $('tog-web').checked
+                    }
+                };
+
+                store.lastPayload = payload;
+                store.pendingResponse = true;
+                ws.send(payload);
+            },
+            
+            save: async () => {
+                if(!store.token) return;
+                const h = store.activeTab==='pdf' ? store.history.pdf : store.history.chat;
+                if(h.length < 2) return;
+                
+                const name = h.find(m=>m.sender==='user')?.text.substring(0, 30) || 'Chat';
+                const payload = {
+                    name, type: store.activeTab==='pdf'?'pdfchat':'aichat',
+                    timestamp: new Date().toISOString(), history: h,
+                    pdfName: store.currentPdfName, docId: store.currentDocId
+                };
+                if(store.currentChatId) payload.id = store.currentChatId;
+
+                const res = await fetch(`${API_URL}/chats`, {
+                    method: 'POST',
+                    headers: {'Authorization': `Bearer ${store.token}`, 'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if(data.id) {
+                    if(!store.currentChatId) {
+                        store.currentChatId = data.id;
+                        chat.updateSidebarLocal(data.id, name);
+                    }
+                }
+            },
+            
+            updateSidebarLocal: (id, name) => {
+                const list = $('history-list');
+                const empty = list.querySelector('.italic');
+                if(empty) empty.remove();
+                const btn = document.createElement('div');
+                btn.className = 'w-full text-left p-2 rounded text-xs text-gray-400 hover:bg-[#1a1a1a] hover:text-white truncate transition mb-1 flex justify-between items-center group cursor-pointer border border-transparent hover:border-[#333]';
+                btn.innerHTML = `<span>${name}</span><button class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 px-2" onclick="window.delChat('${id}', event)">×</button>`;
+                btn.onclick = (e) => { if(e.target.tagName!=='SPAN' && e.target.tagName!=='BUTTON') chat.load(id); };
+                list.prepend(btn);
+            },
+            
+            loadSavedList: async () => {
+                if(!store.token) {
+                    $('history-list').innerHTML = '<div class="text-xs text-center text-gray-600 mt-4">Sign in to save history</div>';
+                    return;
+                }
+                const res = await fetch(`${API_URL}/chats`, { headers: {'Authorization': `Bearer ${store.token}`} });
+                const chats = await res.json();
+                store.chatCount = chats.length;
+                if(chats.length >= 50) $('chat-limit-warning').classList.remove('hidden');
+                
+                const list = $('history-list');
+                list.innerHTML = '';
+                const typeKey = store.activeTab==='pdf'?'pdfchat':'aichat';
+                const filtered = chats.filter(c => c.type === typeKey).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+                if(filtered.length === 0) list.innerHTML = '<div class="text-xs text-center text-gray-600 mt-4 italic">No history found</div>';
+                
+                filtered.forEach(c => {
+                    const btn = document.createElement('div');
+                    btn.className = 'w-full text-left p-2 rounded text-xs text-gray-400 hover:bg-[#1a1a1a] hover:text-white truncate transition mb-1 flex justify-between items-center group cursor-pointer border border-transparent hover:border-[#333]';
+                    btn.innerHTML = `<span>${c.name}</span><button class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 px-2" onclick="window.delChat('${c.id}', event)">×</button>`;
+                    btn.onclick = (e) => { if(e.target.tagName!=='BUTTON') chat.load(c.id); };
+                    list.appendChild(btn);
+                });
+            },
+            
+            load: async (id) => {
+                const container = store.activeTab==='pdf'?$('pdf-chat-container'):$('ai-chat-container');
+                
+                $('welcome-screen').classList.add('hidden');
+
+                container.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin"></i> Loading chat...</div>';
+                try {
+                    const res = await fetch(`${API_URL}/chats/${id}`, { headers: {'Authorization': `Bearer ${store.token}`} });
+                    const c = await res.json();
+                    store.currentChatId = c.id;
+                    const targetTab = c.type==='pdfchat'?'pdf':'chat';
+                    ui.switchTab(targetTab);
+                    const target = store.activeTab;
+                    const targetContainer = target==='pdf'?$('pdf-chat-container'):$('ai-chat-container');
+                    targetContainer.innerHTML = '';
+                    
+                    if(target==='pdf') {
+                        store.history.pdf = [];
+                        store.currentPdfName = c.pdfName; store.currentDocId = c.docId;
+                        $('pdf-empty').innerHTML = `<i class="fas fa-file-pdf text-4xl mb-3 text-blue-500"></i><p class="text-sm font-bold">${c.pdfName}</p><p class="text-xs text-gray-500">History Mode</p>`;
+                        if(c.docId) ws.send({type:'load_doc', data:{doc_id:c.docId}});
+                    } else { store.history.chat = []; }
+                    
+                    c.history.forEach(m => {
+                        const div = document.createElement('div');
+                        div.className = `chat-bubble ${m.sender==='user'?'user-bubble':'ai-bubble'}`;
+                        if(m.imageB64) div.innerHTML += `<img src="data:image/jpeg;base64,${m.imageB64}" class="rounded mb-2 max-w-[200px]">`;
+                        
+                         let processedText = m.text;
+                         if(m.sender !== 'user') {
+                            processedText = m.text.replace(
+                                /### INTERNAL REASONING:\n([\s\S]*?)\n\n/g, 
+                                '<div class="reasoning-block"><div class="text-[10px] font-bold uppercase mb-1 flex items-center gap-2"><i class="fas fa-brain text-blue-500"></i> Thought Process</div>$1</div>'
+                            );
+                         }
+
+                        div.innerHTML += DOMPurify.sanitize(marked.parse(processedText));
+                        targetContainer.appendChild(div);
+                        const arr = target==='pdf' ? store.history.pdf : store.history.chat;
+                        arr.push(m);
+                    });
+                    targetContainer.scrollTop = targetContainer.scrollHeight;
+                    if(window.innerWidth < 768) ui.toggleSidebar(); 
+                } catch(e) { console.error(e); }
+            },
+            
+            del: async (id, e) => {
+                e.stopPropagation();
+                if(confirm("Delete chat?")) {
+                    await fetch(`${API_URL}/chats/${id}`, { method:'DELETE', headers: {'Authorization': `Bearer ${store.token}`} });
+                    chat.loadSavedList();
+                }
+            },
+            
+            newChat: () => {
+                store.currentChatId = null; store.currentDocId = null; store.currentPdfName = null;
+                store.history.chat = []; store.history.pdf = [];
+                $('ai-chat-container').innerHTML = ''; $('pdf-chat-container').innerHTML = '';
+                $('pdf-empty').classList.remove('hidden'); $('pdf-embed').classList.add('hidden'); $('pdf-embed').src = '';
+                
+                $('welcome-screen').classList.remove('hidden');
+
+                app.clearImage(); notify("New Session Started", "success");
+                if(window.innerWidth < 768) ui.toggleSidebar();
+            }
+        };
+
+        const app = {
+            handlePdfUpload: (input) => {
+                const f = input.files[0]; if(!f) return;
+                store.currentPdfName = f.name;
+                $('pdf-empty').classList.add('hidden');
+                $('pdf-embed').classList.remove('hidden');
+                $('pdf-embed').src = URL.createObjectURL(f);
+                
+                $('pdf-chat-container').innerHTML = ''; store.history.pdf = [];
+                ui.lockInputs(true); chat.ui.showThinking('pdf');
+                
+                ws.send({type:'upload_start', filename:f.name});
+                const r = new FileReader();
+                r.onload = (e) => {
+                    const b64 = e.target.result.split(',')[1];
+                    for(let i=0; i<b64.length; i+=50000) ws.send({type:'upload_chunk', data:b64.substring(i, i+50000)});
+                    ws.send({type:'upload_end'});
+                };
+                r.readAsDataURL(f);
+            },
+            handleImageUpload: (input) => {
+                const f = input.files[0]; if(!f) return;
+                const r = new FileReader();
+                r.onload = (e) => {
+                    store.currentImage = e.target.result.split(',')[1];
+                    $('img-tag').src = e.target.result;
+                    $('img-preview').classList.remove('hidden');
+                };
+                r.readAsDataURL(f);
+            },
+            clearImage: () => {
+                store.currentImage = null;
+                $('img-preview').classList.add('hidden');
+                $('img-upload').value = '';
+            },
+            loadKeys: async () => {
+                const res = await fetch(`${API_URL}/keys`, { headers: {'Authorization': `Bearer ${store.token}`} });
+                const keys = await res.json();
+                const list = $('api-key-list'); list.innerHTML = '';
+                
+                if (keys.length >= 1) {
+                    $('create-key-btn').disabled = true;
+                    $('create-key-btn').innerText = "Limit Reached (1/1)";
+                    $('key-count').innerText = "1/1";
+                } else {
+                    $('create-key-btn').disabled = false;
+                    $('create-key-btn').innerText = "Generate Key";
+                    $('key-count').innerText = "0/1";
+                }
+
+                keys.forEach(k => {
+                    const d = document.createElement('div');
+                    d.className = 'bg-black border border-gray-800 p-2 rounded flex justify-between items-center text-xs';
+                    d.innerHTML = `
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <span class="font-mono text-gray-300 truncate w-32">${k.key}</span>
+                            <button class="text-gray-500 hover:text-white transition" onclick="window.copyKey(this, '${k.key}')" title="Copy Key">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <button class="text-red-500 hover:text-white transition" onclick="window.app.revokeKey('${k.key}')">Revoke</button>
+                    `;
+                    list.appendChild(d);
+                });
+            },
+            revokeKey: async (key) => {
+                if(confirm("Revoke this key?")) {
+                    await fetch(`${API_URL}/keys/${key}`, { method:'DELETE', headers: {'Authorization': `Bearer ${store.token}`} });
+                    app.loadKeys();
+                }
+            },
+            loadAdmin: async () => {
+                const res = await fetch(`${API_URL}/admin/stats`, { headers: {'Authorization': `Bearer ${store.token}`} });
+                if(res.status===403) { ui.closeModal('admin-modal'); return; }
+                const d = await res.json();
+                
+                $('stat-users').innerText = d.length; 
+                $('stat-calls').innerText = d.reduce((a,b)=>a+(b.usage||0),0); 
+                $('stat-keys').innerText = d.reduce((a,b)=>a+(b.keys||0),0);
+                
+                $('admin-table-body').innerHTML = d.map(u => `
+                    <tr class="hover:bg-white/5 transition border-b border-gray-800/50 last:border-0">
+                        <td class="p-4 text-white font-medium flex items-center gap-2">
+                            <div class="w-6 h-6 rounded bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-[10px] text-white font-bold border border-gray-600">ID</div>
+                            ${u.username}
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs font-mono">${u.usage||0}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <span class="${(u.api_usage||0) > 0 ? 'bg-blue-900/30 text-blue-400 border border-blue-500/30' : 'text-gray-600'} px-2 py-1 rounded text-xs font-mono transition">
+                                ${u.api_usage||0}
+                            </span>
+                        </td>
+                        <td class="p-4 text-center text-gray-400">${u.keys||0}</td>
+                        <td class="p-4 text-right text-gray-500 text-[10px] font-mono">${u.created?.split('T')[0]||'-'}</td>
+                    </tr>
+                `).join('');
+            },
+            saveBanner: async () => {
+                const txt = $('admin-banner-text').value; const id = $('admin-banner-id').value;
+                await fetch(`${API_URL}/admin/banner`, { method:'POST', headers: {'Authorization': `Bearer ${store.token}`, 'Content-Type':'application/json'}, body:JSON.stringify({text:txt, id:id, active:true}) });
+                notify('Banner Updated', 'success');
+            }
+        };
+
+        $('auth-form').onsubmit = (e) => {
+            e.preventDefault();
+            auth.login($('username').value, $('password').value, $('auth-submit-btn').innerText==='Sign Up');
+        };
+        $('toggle-auth-mode').onclick = (e) => {
+            const isLogin = $('auth-submit-btn').innerText==='Sign Up';
+            $('auth-title').innerText = isLogin ? 'Sign In' : 'Create Account';
+            $('auth-submit-btn').innerText = isLogin ? 'Sign In' : 'Sign Up';
+            e.target.innerText = isLogin ? 'Create Account' : 'Back to Login';
+        };
+        $('guest-login').onclick = () => ui.closeModal('auth-modal');
+        $('create-key-btn').onclick = async () => {
+            const name = prompt("Key Name:");
+            if(name) {
+                await fetch(`${API_URL}/keys`, {method:'POST', headers:{'Authorization':`Bearer ${store.token}`, 'Content-Type':'application/json'}, body:JSON.stringify({name:name})});
+                app.loadKeys();
+            }
+        };
+        $('refresh-admin').onclick = app.loadAdmin;
+        $('save-banner-btn').onclick = app.saveBanner;
+        
+        $('model-selector').onchange = (e) => {
+            const val = e.target.value;
+            const webTog = $('tog-web');
+
+            const items = document.querySelectorAll('.model-spec-item');
+            items.forEach(item => item.style.opacity = '0.5');
+            
+            if(val === 'basic') items[0].style.opacity = '1';
+            if(val === 'advanced') items[1].style.opacity = '1';
+            if(val === 'deep') items[2].style.opacity = '1';
+            if(val === 'usa') items[3].style.opacity = '1';
+            
+            if (val === 'basic') {
+                webTog.checked = false;
+            }
+            
+            if (val === 'advanced' || val === 'usa') {
+                webTog.checked = true;
+                const msg = val === 'usa' ? "US Lite: Web Search Auto-Enabled" : "Advanced Mode: Web Search Enabled";
+                notify(msg, "success");
+            }
+            
+            if (val === 'deep') {
+                if (!store.token) {
+                    notify("Deep Think requires a free account.", "error");
+                    setTimeout(() => {
+                        $('model-selector').value = 'advanced';
+                        $('model-selector').dispatchEvent(new Event('change'));
+                        ui.openModal('auth-modal');
+                    }, 500);
+                    return;
+                }
+                webTog.checked = true;
+                notify("Deep Research Active: 3 Daily Uses", "success");
+            }
+        };
+
+        $('pdf-input').onkeydown=(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chat.send('pdf')}};
+        $('ai-input').onkeydown=(e)=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chat.send('chat')}};
+        $('pdf-mic').onclick = () => voice.toggle('pdf'); $('ai-mic').onclick = () => voice.toggle('chat');
+        $('pdf-send').onclick = () => chat.send('pdf'); $('ai-send').onclick = () => chat.send('chat');
+        $('open-api-btn').onclick = () => { ui.openModal('api-modal'); app.loadKeys(); };
+        $('open-admin-btn').onclick = () => { ui.openModal('admin-modal'); app.loadAdmin(); };
+        $('btn-logout').onclick = auth.logout;
+        $('new-chat-btn').onclick = chat.newChat;
+        $('header-login-btn').onclick = () => ui.openModal('auth-modal');
+        $('toggle-sidebar').onclick = ui.toggleSidebar;
+        $('mobile-close-sidebar').onclick = ui.toggleSidebar;
+        $('tab-pdf').onclick = () => ui.switchTab('pdf');
+        $('tab-chat').onclick = () => ui.switchTab('chat');
+        $('remove-img-btn').onclick = app.clearImage;
+        $('img-upload').onchange = (e) => app.handleImageUpload(e.target);
+        $('pdf-upload').onchange = (e) => app.handlePdfUpload(e.target);
+
+        document.querySelectorAll('.close-modal').forEach(b => b.onclick = (e) => e.target.closest('.modal-backdrop').classList.remove('active'));
+        
+        window.ui = ui; window.app = app; window.chat = chat; window.auth = auth; window.voice = voice; window.delChat = chat.del; window.revokeKey = app.revokeKey;
+
+        auth.init();
+        ui.initBanner();
+        ws.init();
+        ui.switchTab('chat');
+        
+        if(store.history.chat.length === 0) $('welcome-screen').classList.remove('hidden');
+
+    </script>
+</body>
+</html>
