@@ -1,5 +1,5 @@
-**PrivAI is a fully local research and RAG system built for people who want deep research capabilities without sending their data to external services.
-**
+PrivAI is a fully local research and RAG system built for people who want deep research capabilities without sending their data to external services.
+
 Most local AI tools feel slow because they try to do everything with a single large model. PrivAI takes a different approach. It splits the workload across multiple models and manages them intelligently so your system stays responsive.
 
 
